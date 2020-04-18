@@ -5,12 +5,19 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Owin.Security;
 using MvcMusicStore.Models;
+using MvcMusicStore.PerformanceCounters;
+using NLog;
+using PerformanceCounterHelper;
 
 namespace MvcMusicStore.Controllers
 {
     [Authorize]
     public class AccountController : Controller
     {
+        private readonly ILogger logger;
+
+        private static CounterHelper<Counters> counterHelper;
+        
         public enum ManageMessageId
         {
             ChangePasswordSuccess,
@@ -26,6 +33,8 @@ namespace MvcMusicStore.Controllers
         public AccountController()
             : this(new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext())))
         {
+            logger = LogManager.GetCurrentClassLogger();
+            counterHelper = PerformanceHelper.CreateCounterHelper<Counters>("Test project");
         }
 
         public AccountController(UserManager<ApplicationUser> userManager)
@@ -55,7 +64,7 @@ namespace MvcMusicStore.Controllers
         public ActionResult Login(string returnUrl)
         {
             ViewBag.ReturnUrl = returnUrl;
-
+            logger.Info("Login page is opened.");
             return View();
         }
 
@@ -72,10 +81,13 @@ namespace MvcMusicStore.Controllers
                 {
                     await SignInAsync(user, model.RememberMe);
 
+                    counterHelper.Increment(Counters.Logins);
+
                     return RedirectToLocal(returnUrl);
                 }
 
                 ModelState.AddModelError("", "Invalid username or password.");
+                logger.Debug("Invalid username or password");
             }
 
             return View(model);
@@ -132,15 +144,19 @@ namespace MvcMusicStore.Controllers
             {
                 case ManageMessageId.ChangePasswordSuccess:
                     ViewBag.StatusMessage = "Your password has been changed.";
+                    logger.Info("Password was changed");
                     break;
                 case ManageMessageId.SetPasswordSuccess:
                     ViewBag.StatusMessage = "Your password has been set.";
+                    logger.Info("Password was set");
                     break;
                 case ManageMessageId.RemoveLoginSuccess:
                     ViewBag.StatusMessage = "The external login was removed.";
+                    logger.Info("The external login was removed.");
                     break;
                 case ManageMessageId.Error:
                     ViewBag.StatusMessage = "An error has occurred.";
+                    logger.Info("An error has occurred.");
                     break;
                 default:
                     ViewBag.StatusMessage = "";
@@ -318,7 +334,8 @@ namespace MvcMusicStore.Controllers
         public ActionResult LogOff()
         {
             AuthenticationManager.SignOut();
-
+            counterHelper.Increment(Counters.Logouts);
+            logger.Debug("Sign out.");
             return RedirectToAction("Index", "Home");
         }
 
@@ -367,6 +384,7 @@ namespace MvcMusicStore.Controllers
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError("", error);
+                logger.Error($"An error has ocurred {error}.");
             }
         }
 

@@ -3,16 +3,23 @@ using System.Data.Entity;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using MvcMusicStore.Models;
+using NLog;
 
 namespace MvcMusicStore.Controllers
 {
     [Authorize]
     public class CheckoutController : Controller
     {
+        private readonly ILogger logger;
+
         private const string PromoCode = "FREE";
 
         private readonly MusicStoreEntities _storeContext = new MusicStoreEntities();
 
+        public CheckoutController()
+        {
+            logger = LogManager.GetCurrentClassLogger();
+        }
         // GET: /Checkout/
         public ActionResult AddressAndPayment()
         {
@@ -37,7 +44,7 @@ namespace MvcMusicStore.Controllers
                 await ShoppingCart.GetCart(_storeContext, this).CreateOrder(order);
 
                 await _storeContext.SaveChangesAsync();
-
+                logger.Info("Order was saved.");
                 return RedirectToAction("Complete", new { id = order.OrderId });
             }
 

@@ -3,12 +3,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using MvcMusicStore.Models;
+using NLog;
 
 namespace MvcMusicStore.Controllers
 {
     public class StoreController : Controller
     {
+        private readonly ILogger logger;
+
         private readonly MusicStoreEntities _storeContext = new MusicStoreEntities();
+
+        public StoreController(ILogger logger)
+        {
+            this.logger = logger;
+        }
 
         // GET: /Store/
         public async Task<ActionResult> Index()

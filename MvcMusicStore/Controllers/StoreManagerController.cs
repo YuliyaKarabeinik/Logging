@@ -3,13 +3,21 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using MvcMusicStore.Models;
+using NLog;
 
 namespace MvcMusicStore.Controllers
 {
     [Authorize(Roles = "Administrator")]
     public class StoreManagerController : Controller
     {
+        private readonly ILogger logger;
+
         private readonly MusicStoreEntities _storeContext = new MusicStoreEntities();
+        
+        public StoreManagerController(ILogger logger)
+        {
+            this.logger = logger;
+        }
 
         // GET: /StoreManager/
         public async Task<ActionResult> Index()
@@ -48,9 +56,11 @@ namespace MvcMusicStore.Controllers
                 _storeContext.Albums.Add(album);
                 
                 await _storeContext.SaveChangesAsync();
-                
+                logger.Info($"{album} was created.");
+
                 return RedirectToAction("Index");
             }
+            logger.Debug($"{album} was not created.");
 
             return await BuildView(album);
         }
@@ -89,8 +99,11 @@ namespace MvcMusicStore.Controllers
             var album = await _storeContext.Albums.FindAsync(id);
             if (album == null)
             {
+                logger.Error($"{album} was not found.");
+
                 return HttpNotFound();
             }
+            logger.Info($"{album} was deleted.");
 
             return View(album);
         }

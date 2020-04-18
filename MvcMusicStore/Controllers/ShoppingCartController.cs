@@ -4,12 +4,20 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using MvcMusicStore.Models;
 using MvcMusicStore.ViewModels;
+using NLog;
 
 namespace MvcMusicStore.Controllers
 {
     public class ShoppingCartController : Controller
     {
+        private readonly ILogger logger;
+
         private readonly MusicStoreEntities _storeContext = new MusicStoreEntities();
+
+        public ShoppingCartController(ILogger logger)
+        {
+            this.logger = logger;
+        }
 
         // GET: /ShoppingCart/
         public async Task<ActionResult> Index()
@@ -21,7 +29,7 @@ namespace MvcMusicStore.Controllers
                 CartItems = await cart.GetCartItems().ToListAsync(),
                 CartTotal = await cart.GetTotal()
             };
-
+            logger.Info("Shopping cart is opened.");
             return View(viewModel);
         }
 
@@ -62,6 +70,7 @@ namespace MvcMusicStore.Controllers
                 ItemCount = itemCount,
                 DeleteId = id
             };
+            logger.Debug($"{removed} was removed from cart.");
 
             return Json(results);
         }
