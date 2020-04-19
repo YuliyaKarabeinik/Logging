@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using MvcMusicStore.Models;
-using NLog;
+using Logger;
 
 namespace MvcMusicStore.Controllers
 {
@@ -99,7 +99,7 @@ namespace MvcMusicStore.Controllers
             var album = await _storeContext.Albums.FindAsync(id);
             if (album == null)
             {
-                logger.Error($"{album} was not found.");
+                logger.Debug($"{album} was not found.");
 
                 return HttpNotFound();
             }

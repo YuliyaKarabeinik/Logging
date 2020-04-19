@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using MvcMusicStore.Models;
 using MvcMusicStore.PerformanceCounters;
-using NLog;
+using Logger;
 using PerformanceCounterHelper;
 
 namespace MvcMusicStore.Controllers

@@ -3,8 +3,7 @@ using System.Data.Entity;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using MvcMusicStore.Models;
-using NLog;
-
+using Logger;
 namespace MvcMusicStore.Controllers
 {
     [Authorize]
@@ -16,9 +15,9 @@ namespace MvcMusicStore.Controllers
 
         private readonly MusicStoreEntities _storeContext = new MusicStoreEntities();
 
-        public CheckoutController()
+        public CheckoutController(ILogger logger)
         {
-            logger = LogManager.GetCurrentClassLogger();
+            this.logger = logger;
         }
         // GET: /Checkout/
         public ActionResult AddressAndPayment()

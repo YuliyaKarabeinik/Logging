@@ -4,9 +4,9 @@ using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Owin.Security;
+using Logger;
 using MvcMusicStore.Models;
 using MvcMusicStore.PerformanceCounters;
-using NLog;
 using PerformanceCounterHelper;
 
 namespace MvcMusicStore.Controllers
@@ -30,10 +30,10 @@ namespace MvcMusicStore.Controllers
 
         private UserManager<ApplicationUser> _userManager;
 
-        public AccountController()
+        public AccountController(ILogger logger)
             : this(new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext())))
         {
-            logger = LogManager.GetCurrentClassLogger();
+            this.logger = logger;
             counterHelper = PerformanceHelper.CreateCounterHelper<Counters>("Test project");
         }
 
@@ -384,7 +384,7 @@ namespace MvcMusicStore.Controllers
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError("", error);
-                logger.Error($"An error has ocurred {error}.");
+                logger.Debug($"An error has ocurred {error}.");
             }
         }
 

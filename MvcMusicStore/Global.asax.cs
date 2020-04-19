@@ -9,7 +9,7 @@ using Autofac;
 using Autofac.Integration.Mvc;
 using MvcMusicStore.Controllers;
 using MvcMusicStore.PerformanceCounters;
-using NLog;
+using Logger;
 using PerformanceCounterHelper;
 
 namespace MvcMusicStore
@@ -19,22 +19,18 @@ namespace MvcMusicStore
         protected void Application_Start()
         {
             InitLogger();
-            //InitPerformanceCounters();
+            InitPerformanceCounters();
             AreaRegistration.RegisterAllAreas();
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
-            using (var counterHelper = PerformanceHelper.CreateCounterHelper<Counters>("Test project"))
-            {
-                counterHelper.RawValue(Counters.GoToHome, 0);
-            }
         }
 
         private void InitLogger()
         {
             var builder = new ContainerBuilder();
             builder.RegisterControllers(typeof(HomeController).Assembly);
-            builder.Register(f => LogManager.GetLogger("For Controllers")).As<ILogger>();
+            builder.Register(f => new Logger.Logger()).As<ILogger>();
 
             DependencyResolver.SetResolver(
                 new AutofacDependencyResolver(builder.Build()));
@@ -46,6 +42,13 @@ namespace MvcMusicStore
             {
                 counterHelper.RawValue(Counters.GoToHome, 0);
             }
+        }
+
+        protected void Application_Error(object sender, EventArgs e)
+        {
+            Exception exception = Server.GetLastError();
+            var logger = DependencyResolver.Current.GetService(typeof(ILogger)) as ILogger;
+            logger?.Error(exception.Message);
         }
     }
 }
